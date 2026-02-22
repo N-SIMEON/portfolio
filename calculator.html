@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loan Repayment Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      font-family: 'Poppins', sans-serif;
+      background: transparent;
+      color: #e8e2d4;
+      padding: 0;
+      margin: 0;
+      /* Let height grow naturally */
+      height: auto;
+      overflow: visible;
+    }
+
+    .calc-card {
+      background: #16191f;
+      border: 1px solid #23272f;
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    /* ── Title ── */
+    .calc-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffbd39;
+      margin-bottom: 0.35rem;
+      letter-spacing: 0.01em;
+    }
+
+    .calc-intro {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 2rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.03em;
+      line-height: 1.6;
+    }
+
+    .calc-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.8rem;
+    }
+    @media (max-width: 600px) { .calc-form-grid { grid-template-columns: 1fr; } }
+
+    .calc-field { display: flex; flex-direction: column; gap: 0.45rem; }
+
+    .calc-field label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    .calc-input-wrap { position: relative; }
+    .calc-prefix {
+      position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem; color: #ffbd39;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .calc-input {
+      width: 100%;
+      background: #111318;
+      border: 1px solid #23272f;
+      border-radius: 6px;
+      color: #e8e2d4;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      padding: 0.8rem 1rem 0.8rem 3rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+    .calc-input::-webkit-outer-spin-button,
+    .calc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .calc-input:focus {
+      border-color: #8a6f2e;
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+    }
+    .calc-input.calc-error {
+      border-color: #e05555;
+      box-shadow: 0 0 0 3px rgba(224,85,85,0.1);
+    }
+
+    .calc-err-msg {
+      font-size: 0.68rem; color: #e05555;
+      font-family: 'DM Mono', monospace;
+      min-height: 0.9rem; opacity: 0;
+      transform: translateY(-3px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .calc-err-msg.visible { opacity: 1; transform: translateY(0); }
+
+    .calc-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .calc-btn-primary {
+      flex: 1 1 160px;
+      min-width: 0;
+      background: #ffbd39 !important;
+      color: #0a0c10 !important;
+      border: none;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 0.85rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .calc-btn-primary:hover {
+      background: #dbb94f !important;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(201,168,76,0.28);
+    }
+
+    .calc-btn-reset {
+      flex: 0 0 auto;
+      background: #1e2229 !important;
+      color: #9ca3af !important;
+      border: 1px solid #3a3f4a;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.85rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .calc-btn-reset:hover { border-color: #6b7280; color: #e8e2d4 !important; }
+
+    @media (max-width: 400px) {
+      .calc-btn-row { flex-direction: column; }
+      .calc-btn-primary, .calc-btn-reset { flex: 1 1 auto; width: 100%; }
+    }
+
+    /* Result panel */
+    #calcResultPanel {
+      display: none; opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    #calcResultPanel.show { display: block; }
+    #calcResultPanel.animate { opacity: 1; transform: translateY(0); }
+
+    .calc-divider { border: none; border-top: 1px solid #23272f; margin-bottom: 1.8rem; }
+
+    .calc-results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem; margin-bottom: 1.4rem;
+    }
+    @media (max-width: 500px) { .calc-results-grid { grid-template-columns: 1fr 1fr; } }
+
+    .calc-result-box {
+      background: #111318; border: 1px solid #23272f;
+      border-radius: 8px; padding: 1.1rem 1rem;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .calc-result-box::after {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: #ffbd39; transform: scaleX(0);
+      transition: transform 0.5s ease;
+    }
+    .calc-result-box.lit::after { transform: scaleX(1); }
+
+    .r-lbl {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: #6b7280; margin-bottom: 0.4rem;
+    }
+    .r-val {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.4rem; font-weight: 700; color: #ffbd39;
+    }
+    .r-val.big { font-size: 1.75rem; }
+
+    .calc-breakdown {
+      background: #111318; border: 1px solid #23272f;
+      border-radius: 8px; padding: 1.2rem 1.4rem;
+    }
+    .calc-breakdown-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: #6b7280; margin-bottom: 0.9rem;
+    }
+    .calc-bar-track {
+      height: 7px; border-radius: 4px;
+      background: #23272f; overflow: hidden; margin-bottom: 0.7rem;
+    }
+    .calc-bar-fill {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(90deg, #ffbd39, #dbb94f);
+      width: 0%; transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .calc-bar-legend {
+      display: flex; justify-content: space-between;
+      font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    }
+    .lp { color: #ffbd39; }
+    .li { color: #4caf7d; }
+
+    .calc-summary-note {
+      margin-top: 1.2rem; padding: 0.85rem 1.2rem;
+      background: rgba(201,168,76,0.06);
+      border-left: 3px solid #ffbd39;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.82rem; color: #6b7280; line-height: 1.7;
+    }
+    .calc-summary-note strong { color: #e8e2d4; }
+
+    .calc-toggle-wrap { margin-top: 1.4rem; text-align: center; }
+    .calc-toggle-btn {
+      background: transparent; color: #ffbd39;
+      border: 1px solid #8a6f2e; border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.1em;
+      padding: 0.55rem 1.4rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .calc-toggle-btn:hover { background: rgba(201,168,76,0.1); }
+
+    #calcScheduleTable { display: none; margin-top: 1.4rem; overflow-x: auto; }
+    #calcScheduleTable.open { display: block; }
+
+    .calc-table {
+      width: 100%; border-collapse: collapse;
+      font-family: 'DM Mono', monospace; font-size: 0.76rem;
+    }
+    .calc-table thead th {
+      padding: 0.55rem 0.75rem; text-align: right;
+      color: #6b7280; font-size: 0.62rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border-bottom: 1px solid #23272f;
+    }
+    .calc-table thead th:first-child { text-align: center; }
+    .calc-table tbody tr { border-bottom: 1px solid rgba(35,39,47,0.5); }
+    .calc-table tbody tr:hover { background: rgba(201,168,76,0.04); }
+    .calc-table tbody td { padding: 0.5rem 0.75rem; text-align: right; color: #e8e2d4; }
+    .calc-table tbody td:first-child { text-align: center; color: #6b7280; }
+    .calc-table tbody td.i-cell { color: #8a6f2e; }
+  </style>
+</head>
+<body>
+
+  <div class="calc-card">
+    <!-- Title added here, visible inside the card -->
+    <h2 class="calc-title">Loan Repayment Calculator</h2>
+    <p class="calc-intro">Enter your loan details below to compute your monthly payment, total repayment cost, and a full month-by-month amortisation schedule.</p>
+
+    <!-- INPUTS -->
+    <div class="calc-form-grid">
+      <div class="calc-field">
+        <label for="c-principal">Loan Amount</label>
+        <div class="calc-input-wrap">
+          <span class="calc-prefix">Frw</span>
+          <input type="number" id="c-principal" class="calc-input" placeholder="10000" min="1"/>
+        </div>
+        <span class="calc-err-msg" id="cerr-principal"></span>
+      </div>
+      <div class="calc-field">
+        <label for="c-rate">Annual Interest Rate</label>
+        <div class="calc-input-wrap">
+          <span class="calc-prefix">%</span>
+          <input type="number" id="c-rate" class="calc-input" placeholder="5.5" min="0" step="0.01"/>
+        </div>
+        <span class="calc-err-msg" id="cerr-rate"></span>
+      </div>
+      <div class="calc-field">
+        <label for="c-months">Loan Term (Months)</label>
+        <div class="calc-input-wrap">
+          <span class="calc-prefix">#</span>
+          <input type="number" id="c-months" class="calc-input" placeholder="36" min="1" max="600"/>
+        </div>
+        <span class="calc-err-msg" id="cerr-months"></span>
+      </div>
+    </div>
+
+    <div class="calc-btn-row">
+      <button class="calc-btn-primary" id="cCalcBtn">Calculate Repayment</button>
+      <button class="calc-btn-reset"   id="cResetBtn">Reset</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="calcResultPanel">
+      <hr class="calc-divider"/>
+      <div class="calc-results-grid">
+        <div class="calc-result-box" id="cbox-monthly">
+          <div class="r-lbl">Monthly Payment</div>
+          <div class="r-val big" id="cres-monthly">—</div>
+        </div>
+        <div class="calc-result-box" id="cbox-total">
+          <div class="r-lbl">Total Repayment</div>
+          <div class="r-val" id="cres-total">—</div>
+        </div>
+        <div class="calc-result-box" id="cbox-interest">
+          <div class="r-lbl">Total Interest</div>
+          <div class="r-val" id="cres-interest">—</div>
+        </div>
+      </div>
+
+      <div class="calc-breakdown">
+        <div class="calc-breakdown-title">Principal vs. Interest Breakdown</div>
+        <div class="calc-bar-track"><div class="calc-bar-fill" id="cBarFill"></div></div>
+        <div class="calc-bar-legend">
+          <span class="lp" id="cLegendP"></span>
+          <span class="li" id="cLegendI"></span>
+        </div>
+      </div>
+
+      <div class="calc-summary-note" id="cSummaryNote"></div>
+
+      <div class="calc-toggle-wrap">
+        <button class="calc-toggle-btn" id="cToggleSchedule">▼ Show Amortisation Schedule</button>
+      </div>
+
+      <div id="calcScheduleTable">
+        <table class="calc-table">
+          <thead>
+            <tr>
+              <th>Mo.</th><th>Payment</th><th>Principal</th><th>Interest</th><th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="cScheduleBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cfmt = n => 'Frw ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const cpct = n => n.toFixed(1) + '%';
+
+    // ── Height reporting ──────────────────────────────────────────────────────
+    function sendHeight() {
+      if (window.parent === window) return;
+      // Use scrollHeight of the card itself to avoid feedback loops
+      const h = document.querySelector('.calc-card').getBoundingClientRect().height;
+      window.parent.postMessage({ iframeHeight: Math.ceil(h) }, '*');
+    }
+
+    // Send on load, and observe DOM size changes
+    window.addEventListener('load', sendHeight);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(sendHeight).observe(document.querySelector('.calc-card'));
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────────
+    function cShowErr(id, msg) {
+      document.getElementById('c-' + id).classList.add('calc-error');
+      const e = document.getElementById('cerr-' + id);
+      e.textContent = msg; e.classList.add('visible');
+    }
+    function cClearErr(id) {
+      document.getElementById('c-' + id).classList.remove('calc-error');
+      document.getElementById('cerr-' + id).classList.remove('visible');
+    }
+
+    function cValidate() {
+      let ok = true;
+      const P = parseFloat(document.getElementById('c-principal').value);
+      const R = parseFloat(document.getElementById('c-rate').value);
+      const N = parseInt(document.getElementById('c-months').value);
+      ['principal','rate','months'].forEach(cClearErr);
+
+      if (!document.getElementById('c-principal').value.trim() || isNaN(P))
+        { cShowErr('principal','Enter a loan amount.'); ok=false; }
+      else if (P <= 0)  { cShowErr('principal','Must be greater than 0.'); ok=false; }
+      else if (P > 1e8) { cShowErr('principal','Amount seems unrealistic.'); ok=false; }
+
+      if (!document.getElementById('c-rate').value.trim() || isNaN(R))
+        { cShowErr('rate','Enter an interest rate.'); ok=false; }
+      else if (R < 0)   { cShowErr('rate','Rate cannot be negative.'); ok=false; }
+      else if (R > 100) { cShowErr('rate','Rate cannot exceed 100%.'); ok=false; }
+
+      if (!document.getElementById('c-months').value.trim() || isNaN(N))
+        { cShowErr('months','Enter number of months.'); ok=false; }
+      else if (N < 1)   { cShowErr('months','Minimum 1 month.'); ok=false; }
+      else if (N > 600) { cShowErr('months','Maximum 600 months.'); ok=false; }
+
+      return ok ? { P, R, N } : null;
+    }
+
+    // ── Loan math ─────────────────────────────────────────────────────────────
+    function cCalcLoan(P, R, N) {
+      if (R === 0) { const m = P/N; return { monthly:m, total:m*N, totalInterest:0 }; }
+      const r = R/100/12;
+      const monthly = P * (r * Math.pow(1+r,N)) / (Math.pow(1+r,N) - 1);
+      return { monthly, total: monthly*N, totalInterest: monthly*N - P };
+    }
+
+    function cBuildSchedule(P, R, N, monthly) {
+      const r = R===0 ? 0 : R/100/12;
+      let bal = P;
+      return Array.from({length: N}, (_,i) => {
+        const interest  = bal * r;
+        const principal = monthly - interest;
+        bal -= principal;
+        return { mo:i+1, payment:monthly, principal, interest, balance:Math.max(bal,0) };
+      });
+    }
+
+    // ── Render results ────────────────────────────────────────────────────────
+    function cRender(P, R, N, res) {
+      const { monthly, total, totalInterest } = res;
+      document.getElementById('cres-monthly').textContent  = cfmt(monthly);
+      document.getElementById('cres-total').textContent    = cfmt(total);
+      document.getElementById('cres-interest').textContent = cfmt(totalInterest);
+
+      const pp = (P / total) * 100;
+      setTimeout(() => { document.getElementById('cBarFill').style.width = pp + '%'; }, 100);
+      document.getElementById('cLegendP').textContent = 'Principal ' + cpct(pp);
+      document.getElementById('cLegendI').textContent = 'Interest '  + cpct(100 - pp);
+
+      ['cbox-monthly','cbox-total','cbox-interest'].forEach((id,i) =>
+        setTimeout(() => document.getElementById(id).classList.add('lit'), i*150+100));
+
+      const yrs=Math.floor(N/12), mos=N%12;
+      const term = yrs>0 ? `${yrs} yr${yrs>1?'s':''}${mos>0?' '+mos+' mo':''}` : `${N} months`;
+      document.getElementById('cSummaryNote').innerHTML =
+        `A loan of <strong>${cfmt(P)}</strong> at <strong>${R}% p.a.</strong> over <strong>${term}</strong> ` +
+        `costs <strong>${cfmt(monthly)}</strong>/month. Total interest paid: <strong>${cfmt(totalInterest)}</strong> ` +
+        `(<strong>${cpct((totalInterest/P)*100)}</strong> of principal).`;
+
+      document.getElementById('cScheduleBody').innerHTML =
+        cBuildSchedule(P, R, N, monthly).map(r =>
+          `<tr><td>${r.mo}</td><td>${cfmt(r.payment)}</td><td>${cfmt(r.principal)}</td>` +
+          `<td class="i-cell">${cfmt(r.interest)}</td><td>${cfmt(r.balance)}</td></tr>`
+        ).join('');
+
+      const panel = document.getElementById('calcResultPanel');
+      panel.style.display = 'block';
+      requestAnimationFrame(() => requestAnimationFrame(() => panel.classList.add('animate')));
+    }
+
+    // ── Button events ─────────────────────────────────────────────────────────
+    document.getElementById('cCalcBtn').addEventListener('click', () => {
+      const data = cValidate();
+      if (!data) return;
+      document.querySelectorAll('.calc-result-box').forEach(b => b.classList.remove('lit'));
+      document.getElementById('cBarFill').style.width = '0%';
+      document.getElementById('calcScheduleTable').classList.remove('open');
+      document.getElementById('cToggleSchedule').textContent = '▼ Show Amortisation Schedule';
+      cRender(data.P, data.R, data.N, cCalcLoan(data.P, data.R, data.N));
+    });
+
+    document.getElementById('cResetBtn').addEventListener('click', () => {
+      ['principal','rate','months'].forEach(id => {
+        document.getElementById('c-'+id).value = ''; cClearErr(id);
+      });
+      const panel = document.getElementById('calcResultPanel');
+      panel.classList.remove('animate');
+      setTimeout(() => { panel.style.display = 'none'; }, 400);
+      document.querySelectorAll('.calc-result-box').forEach(b => b.classList.remove('lit'));
+      document.getElementById('cBarFill').style.width = '0%';
+    });
+
+    document.getElementById('cToggleSchedule').addEventListener('click', function() {
+      const open = document.getElementById('calcScheduleTable').classList.toggle('open');
+      this.textContent = open ? '▲ Hide Amortisation Schedule' : '▼ Show Amortisation Schedule';
+    });
+
+    ['principal','rate','months'].forEach(id =>
+      document.getElementById('c-'+id).addEventListener('input', () => cClearErr(id)));
+  </script>
+</body>
+</html>

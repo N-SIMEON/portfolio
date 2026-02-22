@@ -424,10 +424,12 @@ h1, h2, h3, h4, h5,
 					text-align: center;
 				}
 				.one-third{
-					width: 60%;
+					width: 50%;
 					position: relative;
 					// height: 650px;
 					z-index: -1;
+    			background-size: contain !important;
+    			background-position: bottom center !important;
 					.overlay{
 						position: absolute;
 						top: 0;
