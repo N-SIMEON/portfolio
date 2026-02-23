@@ -1,6 +1,6 @@
 # Simeon NAYITURIKI — Portfolio
 
-A personal portfolio website showcasing my skills, experience, and projects as a Frontend Developer based in Kigali, Rwanda.
+A personal portfolio website showcasing my skills, experience, and projects as a Frontend Developer based in Gicumbi, Rwanda.
 
 ## 🚀 Live Sections
 
