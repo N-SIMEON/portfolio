@@ -125,6 +125,27 @@
   transition: height 0.3s ease;
 }
 
+.about-img img {
+  border-radius: 50% !important;
+  object-fit: cover;
+  width: 150px;
+  height: 150px;
+}
+.slider-item .one-third {
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  width: 450px !important;
+  height: 450px !important;
+  min-height: unset !important;
+  position: absolute !important;
+  right: 10% !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: auto !important;
+}
+
 </style>
 
 
@@ -155,8 +176,8 @@
 	       <div class="slider-item ">
 	      	<div class="overlay"></div>
 	         <div class="container">
-	          <div class="row d-md-flex no-gutters slider-text align-items-end justify-content-end" data-scrollax-parent="true">
-				<div class="one-third js-fullheight order-md-last img" style="background-image: url(images/bg_main.png); background-size: 400px auto; ">
+	          <div class="row d-md-flex no-gutters slider-text align-items-center justify-content-end" data-scrollax-parent="true">
+				<div class="one-third js-fullheight order-md-last img" style="background-image: url(images/bg_main.png); background-size: cover; background-position:center top; width:350px; height:350px; border-radius:50%;  overflow:hidden; flex-shrink:0; margin-left:auto; margin-right:0;">
 	          	 <div class="overlay"></div>
 	          	</div>
 		          <div class="one-forth d-flex  align-items-center ftco-animate" data-scrollax=" properties: { translateY: '70%' }">
@@ -229,7 +250,8 @@
 								<div class="row">
 									<div class="col-sm-6 col-md-5">
 									  <div class="about-img">
-										<img src="images/me.png" class="img-fluid rounded b-shadow-a" alt="">
+										<img src="images/me.png" class="img-fluid rounded b-shadow-a" alt=""
+										style="width:220px; height:220px; border-radius:50% !important; object-fit:cover;    object-position:center-top; 	display:block;">
 									  </div>
 									</div>
 									<!-- Details next to profile image -->
